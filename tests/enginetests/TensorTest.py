@@ -109,5 +109,39 @@ class TestTensor(unittest.TestCase):
         self.assertEqual(e.grad_fn.operation, Operation.ADD)
         self.assertEqual(e.grad_fn.parents[0].grad_fn.operation, Operation.MUL)
 
+    # Subtraction
+    def test_subtraction_data(self):
+        """Test: a - b"""
+        a = Tensor(10)
+        b = Tensor(3)
+        c = a - b
+        self.assertEqual(c.data, 7)
+        self.assertEqual(c.grad_fn.operation, Operation.SUB)
+
+    def test_int_minus_tensor(self):
+        """Test: int - Tensor (5 - 10 = -5)"""
+        a = 5
+        b = Tensor(10)
+        c = a - b
+        self.assertEqual(c.data, -5)
+        # Parent[0] should be the wrapped 5, Parent[1] should be b (10)
+        self.assertEqual(c.grad_fn.parents[0].data, 5)
+        self.assertEqual(c.grad_fn.parents[1].data, 10)
+
+    # ReLU
+    def test_relu_positive(self):
+        """ReLU of positive should stay positive"""
+        a = Tensor(5.0)
+        b = a.relu()
+        self.assertEqual(b.data, 5.0)
+        self.assertEqual(b.grad_fn.operation, Operation.RELU)
+
+    def test_relu_negative(self):
+        """ReLU of negative should be zero"""
+        a = Tensor(-5.0)
+        b = a.relu()
+        self.assertEqual(b.data, 0)
+        self.assertEqual(b.grad_fn.parents[0], a)
+
 if __name__ == "__main__":
     unittest.main()
